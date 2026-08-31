@@ -1,0 +1,54 @@
+{
+  "name": "deribit-mcp",
+  "version": "2.20260818.0",
+  "description": "Local stdio MCP server for the Deribit JSON-RPC v2 API (market data, account, trading)",
+  "keywords": [
+    "mcp",
+    "modelcontextprotocol",
+    "deribit",
+    "crypto",
+    "options",
+    "futures",
+    "trading"
+  ],
+  "license": "MIT",
+  "author": "Everett",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/freeeverett/deribit-mcp.git"
+  },
+  "type": "module",
+  "bin": {
+    "deribit-mcp": "dist/index.js"
+  },
+  "files": [
+    "dist",
+    "docs",
+    "README.md",
+    "LICENSE"
+  ],
+  "engines": {
+    "node": ">=20"
+  },
+  "scripts": {
+    "dev": "tsx src/index.ts",
+    "build": "tsc -p tsconfig.json && chmod +x dist/index.js",
+    "typecheck": "tsc -p tsconfig.json --noEmit",
+    "check:api": "npm run build --silent && node scripts/check-api-drift.mjs",
+    "start": "node dist/index.js",
+    "prepublishOnly": "npm run build",
+    "docs:coverage": "npm run build --silent && node scripts/check-api-drift.mjs --write",
+    "test": "npm run smoke",
+    "smoke": "npm run build --silent && node test/smoke.mjs",
+    "test:all": "npm run build --silent && node test/test-all.mjs"
+  },
+  "dependencies": {
+    "@modelcontextprotocol/sdk": "^1.30.0",
+    "zod": "^4.0.0"
+  },
+  "devDependencies": {
+    "@types/node": "^22.0.0",
+    "tsx": "^4.23.12",
+    "typescript": "^5.6.0"
+  }
+}
