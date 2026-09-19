@@ -1,6 +1,6 @@
 {
   "name": "deribit-mcp",
-  "version": "2.20260818.0",
+  "version": "2.20260915.0",
   "description": "Local stdio MCP server for the Deribit JSON-RPC v2 API (market data, account, trading)",
   "keywords": [
     "mcp",

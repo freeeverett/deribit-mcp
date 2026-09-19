@@ -205,10 +205,10 @@ The endpoint-level breakdown, including which tool calls which method, lives in
 
 ## Reading the version number
 
-A version looks like `2.20260818.0`:
+A version looks like `2.20260915.0`:
 
 - `2` — the Deribit API major version (v2)
-- `20260818` — the Deribit documentation release this is aligned to (2026-08-18)
+- `20260915` — the Deribit documentation release this is aligned to (2026-09-15)
 - `0` — the nth revision against that documentation release
 
 In other words, **the middle segment tells you which day's Deribit documentation a release tracks**.
