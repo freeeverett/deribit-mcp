@@ -233,7 +233,7 @@ export const TRADING_WRITE_TOOLS: ToolModule[] = [
 		],
 		annotations: { ...DESTRUCTIVE_ANNOTATIONS, idempotentHint: true },
 		description:
-			"Cancel orders. Exactly one of order_id, label, instrument_name, currency, currency_pair, currencies or cancel_all=true must be chosen; empty arguments cancel nothing.",
+			"Cancel orders. Exactly one of order_id, label, instrument_name, currency, currency_pair, currencies or cancel_all=true must be chosen; empty arguments cancel nothing. With cancel_all=true, kind and order_type restrict cancellation across all currencies.",
 		inputSchema: z.strictObject({
 			order_id: z.string().min(1).optional(),
 			label: S.label.optional(),
@@ -302,6 +302,9 @@ export const TRADING_WRITE_TOOLS: ToolModule[] = [
 			} else if (currency) {
 				apiMethod = "private/cancel_all_by_currency";
 				params = { currency, ...common };
+			} else if (args.kind !== undefined || args.order_type !== undefined) {
+				apiMethod = "private/cancel_all_by_kind_or_type";
+				params = { currency: "any", ...common };
 			} else {
 				apiMethod = "private/cancel_all";
 				params = S.compact({

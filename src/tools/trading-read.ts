@@ -16,7 +16,7 @@ export const TRADING_READ_TOOLS: ToolModule[] = [
 			"private/get_open_orders_by_label",
 		],
 		description:
-			"Currently active, unfilled orders. Can be filtered by instrument, currency and label; when label is given, currency must be given too. With no filter it queries every currency.",
+			"Currently active, unfilled orders. Choose instrument_name (optionally with type), currency plus label, or currency (optionally with kind/type). instrument_name cannot be combined with currency, label or kind; label requires currency and cannot be combined with kind/type. With no selector it queries every currency, optionally filtered by kind/type.",
 		inputSchema: z.strictObject({
 			currency: S.currency.optional(),
 			instrument_name: S.instrumentName.optional(),
@@ -28,7 +28,14 @@ export const TRADING_READ_TOOLS: ToolModule[] = [
 			const currency = S.up(args.currency);
 			const instrumentName = args.instrument_name;
 			const label = args.label;
-			if (label && !currency) {
+			const hasLabel = label !== undefined;
+			if (instrumentName && (currency !== undefined || hasLabel || args.kind !== undefined)) {
+				throw new InvalidParamsError("instrument_name cannot be combined with currency, label or kind");
+			}
+			if (hasLabel && (args.kind !== undefined || args.type !== undefined)) {
+				throw new InvalidParamsError("label cannot be combined with kind or type");
+			}
+			if (hasLabel && !currency) {
 				throw new InvalidParamsError("currency is required when querying by label");
 			}
 
@@ -37,7 +44,7 @@ export const TRADING_READ_TOOLS: ToolModule[] = [
 			if (instrumentName) {
 				apiMethod = "private/get_open_orders_by_instrument";
 				params = S.compact({ instrument_name: instrumentName, type: args.type });
-			} else if (label) {
+			} else if (hasLabel) {
 				apiMethod = "private/get_open_orders_by_label";
 				params = { currency, label };
 			} else if (currency) {

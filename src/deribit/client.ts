@@ -113,13 +113,14 @@ export class DeribitClient {
 		try {
 			return await this.rpc(method, params, { token, readOnly, timeoutMs });
 		} catch (error) {
-			// Re-authenticate once when the cached token is invalidated server-side
-			// (key rotated, session logged out). Taking this path for writes is safe:
-			// invalid_token means the request never reached the matching engine.
+			// Clear an invalid token for future calls, but only replay read-only
+			// requests. Every write must be sent exactly once, including auth failures.
 			if (error instanceof DeribitApiError && error.code === INVALID_TOKEN) {
 				this.tokens.delete(scopeKey(scope));
-				const fresh = await this.accessToken(scope);
-				return await this.rpc(method, params, { token: fresh, readOnly, timeoutMs });
+				if (readOnly) {
+					const fresh = await this.accessToken(scope);
+					return await this.rpc(method, params, { token: fresh, readOnly, timeoutMs });
+				}
 			}
 			throw error;
 		}
@@ -198,6 +199,7 @@ export class DeribitClient {
 			if (options.token) headers.Authorization = `Bearer ${options.token}`;
 
 			let response: Response;
+			let text: string;
 			try {
 				response = await fetch(url, {
 					method: "POST",
@@ -205,6 +207,9 @@ export class DeribitClient {
 					body: JSON.stringify({ jsonrpc: "2.0", id: requestId, method, params }),
 					signal: AbortSignal.timeout(options.timeoutMs),
 				});
+				// A connection may fail after headers arrive. Body reads use the same
+				// timeout and retry policy as fetch; writes still have one attempt.
+				text = await response.text();
 			} catch (error) {
 				lastError = error;
 				if (attempt >= attempts || !isTransientNetworkError(error)) throw error;
@@ -215,7 +220,6 @@ export class DeribitClient {
 			// Crucial: Deribit's business errors come back as HTTP 400 with a JSON-RPC
 			// error in the body, so we must not short-circuit on the status code —
 			// read and parse the body first.
-			const text = await response.text();
 			let envelope: RpcEnvelope;
 			try {
 				envelope = JSON.parse(text) as RpcEnvelope;

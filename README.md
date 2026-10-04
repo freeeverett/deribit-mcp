@@ -125,7 +125,8 @@ adopt a mainnet or custom endpoint from the file). It drives all 39 tools throug
 client and requires a key with `trade:read_write`: it creates, edits and cancels a limit order
 carrying a unique test label, briefly opens and closes a market position, and creates a test combo.
 On exit the script cancels anything left under that label, and the command fails if that cleanup
-fails. `npm test` remains the fast public-endpoint regression that needs no credentials.
+fails. `npm test` runs offline regressions for request retries and order filters, followed by
+the public-endpoint smoke tests against testnet; it needs no credentials.
 
 ---
 
